@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-char filename[20]="basa.txt";
 
 struct station
 {
@@ -69,16 +68,33 @@ struct station *search(char *word, Node **root, int n)
     }
     return NULL;
 }
+void get_word(FILE *file, char *word)
+{   int c; char *i=word;
+
+    c = getc(file);
+    c = getc(file);
+   
+    while (c != '$')
+    {
+        *i = c;
+         ++i;
+         c = getc(file);
+    }
+    *i='\0';
+    c = getc(file);
+
+    return;
+}
 
 struct station * input(FILE *basa, Node **root, int n) // basa - list for graph construction;
   {
 
       int i;
-      char nameproverki[20];
+      char nameproverki[50];
       struct station *u, *ukas, *q;
       while (!feof(basa))
       {
-        fscanf(basa,"%s", nameproverki);
+       get_word(basa,nameproverki);
         printf("osnov  %s \n", nameproverki);
         ukas=search(nameproverki, root, n);
         printf("%s %p\n", nameproverki, ukas);
@@ -94,11 +110,12 @@ struct station * input(FILE *basa, Node **root, int n) // basa - list for graph 
        fscanf(basa,"%d",&(u->count));
        (u->l)=100000;
 
+ 
        (u->utransfer)=(struct transfer *)malloc((u->count)*sizeof(struct transfer));
-
+ 
         for(i=0;i<(u->count);i++)
         {
-           fscanf(basa,"%s", nameproverki);
+           get_word(basa,nameproverki);
            printf("zikl   %s \n", nameproverki);
            ukas=search(nameproverki, root, n);
            if(ukas==NULL)
@@ -152,17 +169,19 @@ void routesearch(struct station *run, struct station *source, int lmax)
 
 int main()
 {
-    char filename[10], purpose[30], source[30];
+    char filename[10], purpose[50], source[50];
     struct station *p, *upurpose, *usource;
     FILE *file;
     int i, n=255;
     Node **root; root = calloc(sizeof(Node*), n);
 
-    //printf("read base from: ");
-    // scanf("%s",filename);
+//    printf("read base from: ");
+//     scanf("%s",filename);
 
-                 file=fopen("basa.txt","r");
+                 file=fopen("basas.txt","r");
 if (file==NULL){printf("File '%s' cannot be open\n", filename);  return 7;}
+
+
 
  p=input(file, root, n);
 
@@ -177,5 +196,5 @@ usource=search(source, root, n);
 routesearch(upurpose,usource,lmax);
 printf("%d", (usource)->l);
 fclose(file);
-return 0;
+    return 0;
 }
