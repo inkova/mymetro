@@ -73,24 +73,25 @@ void get_word(FILE *file, char *word)
 
     c = getc(file);
     c = getc(file);
-   
+    //printf("%d\n",c);
     while (c != '$')
     {
+     //   printf("%d\n",c);
         *i = c;
          ++i;
          c = getc(file);
+
     }
     *i='\0';
     c = getc(file);
 
     return;
 }
-
 struct station * input(FILE *basa, Node **root, int n) // basa - list for graph construction;
   {
 
       int i;
-      char nameproverki[50];
+      char nameproverki[100];
       struct station *u, *ukas, *q;
       while (!feof(basa))
       {
@@ -110,9 +111,8 @@ struct station * input(FILE *basa, Node **root, int n) // basa - list for graph 
        fscanf(basa,"%d",&(u->count));
        (u->l)=100000;
 
- 
        (u->utransfer)=(struct transfer *)malloc((u->count)*sizeof(struct transfer));
- 
+
         for(i=0;i<(u->count);i++)
         {
            get_word(basa,nameproverki);
@@ -133,7 +133,6 @@ struct station * input(FILE *basa, Node **root, int n) // basa - list for graph 
 
       }
       return u;
-
   }
 
 struct station *forroute(char *word, Node **root, int n)
@@ -145,6 +144,31 @@ struct station *forroute(char *word, Node **root, int n)
     return purpose;
 }
 
+
+void route_print(struct station *run, struct station *source)
+{
+    int i=0, tp;
+    if(run==source) { printf("end of the road\n"); return; }
+    for(i=0;i<(run->count); ++i)
+    {
+        tp= (run->l)-((run->utransfer)+i)->unewstation->l ;
+        if (tp==((run->utransfer)+i)->duration)
+        {
+           printf( "%s->", ((run->utransfer)+i)->unewstation->name );
+           route_print(((run->utransfer)+i)->unewstation, source);
+           return;
+        }
+   }
+   printf("Error");
+   return;
+}
+
+void forroute_print(struct station *run, struct station *source)
+{
+    printf("\nstart of the road->%s->",run->name);
+    route_print(run, source);
+    return;
+}
 
 void routesearch(struct station *run, struct station *source, int lmax)
 {   int i=0, tp;
@@ -169,7 +193,7 @@ void routesearch(struct station *run, struct station *source, int lmax)
 
 int main()
 {
-    char filename[10], purpose[50], source[50];
+    char filename[10], purpose[100], source[100];
     struct station *p, *upurpose, *usource;
     FILE *file;
     int i, n=255;
@@ -178,12 +202,13 @@ int main()
 //    printf("read base from: ");
 //     scanf("%s",filename);
 
-                 file=fopen("basas.txt","r");
+                 file=fopen("basa.txt","r");
 if (file==NULL){printf("File '%s' cannot be open\n", filename);  return 7;}
 
 
 
  p=input(file, root, n);
+
 
 printf("to: ");
 scanf("%s", purpose);
@@ -195,6 +220,10 @@ upurpose=forroute(purpose, root, n);
 usource=search(source, root, n);
 routesearch(upurpose,usource,lmax);
 printf("%d", (usource)->l);
+
+
+forroute_print(usource, upurpose);
+
 fclose(file);
     return 0;
 }
