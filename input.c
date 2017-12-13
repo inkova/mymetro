@@ -4,7 +4,7 @@
 
 struct station
 {
-    char name[20];
+    char name[100];
     int l;                      //variable to find path length
     int count;
     struct transfer *utransfer;
@@ -24,11 +24,11 @@ typedef struct Node
 
 void add(char *word, Node **root, int n, struct station * u)
 {
-    printf("Adding word %s\n", word);
+    //printf("Adding word %s\n", word);
     char *i = word; Node **p = &root[(*i)%n];
     while (*p)
     {
-	printf("%c already exists here\n", *i);
+	//printf("%c already exists here\n", *i);
 	++i;
 	if (!*i)
 	{
@@ -39,7 +39,7 @@ void add(char *word, Node **root, int n, struct station * u)
     }
     while (1)
     {
-	printf("Creating %c\n", *i);
+	//printf("Creating %c\n", *i);
 	*p = malloc(sizeof(Node));
 	(*p)->next = calloc(sizeof(Node*), n);
 	++i;
@@ -73,10 +73,8 @@ void get_word(FILE *file, char *word)
 
     c = getc(file);
     c = getc(file);
-    //printf("%d\n",c);
     while (c != '$')
     {
-     //   printf("%d\n",c);
         *i = c;
          ++i;
          c = getc(file);
@@ -87,21 +85,37 @@ void get_word(FILE *file, char *word)
 
     return;
 }
+void my_scanf(char *word)
+{    char c, *i=word;
+scanf("%c", &c);
+    while (c != 10)
+    {
+         ;
+           printf("%d\n",c);
+        *i = c;
+         ++i;
+         scanf("%c", &c);
+
+    }
+    *i='\0';
+return;
+}
 struct station * input(FILE *basa, Node **root, int n) // basa - list for graph construction;
   {
 
       int i;
       char nameproverki[100];
-      struct station *u, *ukas, *q;
+      struct station *u=NULL, *ukas=NULL, *q=NULL;
       while (!feof(basa))
       {
-       get_word(basa,nameproverki);
+        get_word(basa,nameproverki);
         printf("osnov  %s \n", nameproverki);
         ukas=search(nameproverki, root, n);
         printf("%s %p\n", nameproverki, ukas);
         if(ukas==NULL)
         {
-          u=(struct station *)malloc (sizeof(struct station));
+          u=(struct station*) malloc (sizeof(struct station));
+          printf("new u  %s %p\n", nameproverki, u);
           add(nameproverki, root, n, u);
         }
         else
@@ -111,16 +125,18 @@ struct station * input(FILE *basa, Node **root, int n) // basa - list for graph 
        fscanf(basa,"%d",&(u->count));
        (u->l)=100000;
 
-       (u->utransfer)=(struct transfer *)malloc((u->count)*sizeof(struct transfer));
+       (u->utransfer)=(struct transfer *) malloc((u->count)*sizeof(struct transfer));
 
         for(i=0;i<(u->count);i++)
         {
            get_word(basa,nameproverki);
            printf("zikl   %s \n", nameproverki);
            ukas=search(nameproverki, root, n);
+          // printf("%s %p\n", nameproverki, ukas);
            if(ukas==NULL)
            {
-             q=(struct station *)malloc (sizeof(struct station));
+             q=(struct station*)malloc (sizeof(struct station));
+            printf("new q  %s %p\n", nameproverki, q);
              add(nameproverki, root, n, q);
            }
            else
@@ -175,6 +191,7 @@ void routesearch(struct station *run, struct station *source, int lmax)
 
     for(; i<(run->count); ++i)
     {
+      printf("\n%s\n",((run->utransfer)+i)->unewstation->name);
       tp=((run->utransfer)+i)->unewstation->l - (run->l);
       if( tp > ((run->utransfer)+i)->duration)
       {
@@ -193,7 +210,7 @@ void routesearch(struct station *run, struct station *source, int lmax)
 
 int main()
 {
-    char filename[10], purpose[100], source[100];
+    char filename[10], purpose[100]="Borovickaya", source[100]="Arbatskaya(Arbatsko-Pokrovskaya liniya)";
     struct station *p, *upurpose, *usource;
     FILE *file;
     int i, n=255;
@@ -202,7 +219,7 @@ int main()
 //    printf("read base from: ");
 //     scanf("%s",filename);
 
-                 file=fopen("basa.txt","r");
+                 file=fopen("basas.txt","r");
 if (file==NULL){printf("File '%s' cannot be open\n", filename);  return 7;}
 
 
@@ -211,13 +228,18 @@ if (file==NULL){printf("File '%s' cannot be open\n", filename);  return 7;}
 
 
 printf("to: ");
-scanf("%s", purpose);
+my_scanf(purpose);
+
 printf("from: ");
-scanf("%s", source);
+my_scanf(source);
 
 int lmax=100000;
 upurpose=forroute(purpose, root, n);
+printf("%s %p\n", purpose, upurpose);
+
 usource=search(source, root, n);
+printf("%s %p\n", source, usource);
+
 routesearch(upurpose,usource,lmax);
 printf("%d", (usource)->l);
 
