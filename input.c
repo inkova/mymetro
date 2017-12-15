@@ -24,11 +24,9 @@ typedef struct Node
 
 void add(char *word, Node **root, int n, struct station * u)
 {
-    //printf("Adding word %s\n", word);
     char *i = word; Node **p = &root[(*i)%n];
     while (*p)
     {
-	//printf("%c already exists here\n", *i);
 	++i;
 	if (!*i)
 	{
@@ -39,7 +37,6 @@ void add(char *word, Node **root, int n, struct station * u)
     }
     while (1)
     {
-	//printf("Creating %c\n", *i);
 	*p = malloc(sizeof(Node));
 	(*p)->next = calloc(sizeof(Node*), n);
 	++i;
@@ -85,13 +82,12 @@ void get_word(FILE *file, char *word)
 
     return;
 }
+
 void my_scanf(char *word)
-{    char c, *i=word;
-scanf("%c", &c);
+{   char c, *i=word;
+    scanf("%c", &c);
     while (c != 10)
     {
-         ;
-           printf("%d\n",c);
         *i = c;
          ++i;
          scanf("%c", &c);
@@ -100,6 +96,19 @@ scanf("%c", &c);
     *i='\0';
 return;
 }
+
+void time(int *hour, int *minute, int *l)
+{
+    (*minute)+=(*l);
+    while((*minute)>=60)
+    {
+        (*minute)-=60;
+        (*hour)+=1;
+    }
+    if(*hour>23) *hour-=24;
+    return;
+}
+
 struct station * input(FILE *basa, Node **root, int n) // basa - list for graph construction;
   {
 
@@ -109,13 +118,10 @@ struct station * input(FILE *basa, Node **root, int n) // basa - list for graph 
       while (!feof(basa))
       {
         get_word(basa,nameproverki);
-        printf("osnov  %s \n", nameproverki);
         ukas=search(nameproverki, root, n);
-        printf("%s %p\n", nameproverki, ukas);
         if(ukas==NULL)
         {
           u=(struct station*) malloc (sizeof(struct station));
-          printf("new u  %s %p\n", nameproverki, u);
           add(nameproverki, root, n, u);
         }
         else
@@ -130,13 +136,10 @@ struct station * input(FILE *basa, Node **root, int n) // basa - list for graph 
         for(i=0;i<(u->count);i++)
         {
            get_word(basa,nameproverki);
-           printf("zikl   %s \n", nameproverki);
            ukas=search(nameproverki, root, n);
-          // printf("%s %p\n", nameproverki, ukas);
            if(ukas==NULL)
            {
              q=(struct station*)malloc (sizeof(struct station));
-            printf("new q  %s %p\n", nameproverki, q);
              add(nameproverki, root, n, q);
            }
            else
@@ -161,17 +164,18 @@ struct station *forroute(char *word, Node **root, int n)
 }
 
 
-void route_print(struct station *run, struct station *source)
+void route_print(struct station *run, struct station *source, int *hour, int *minute)
 {
     int i=0, tp;
-    if(run==source) { printf("end of the road\n"); return; }
+    if(run==source) { printf("\n->end of the road\n"); return; }
     for(i=0;i<(run->count); ++i)
     {
         tp= (run->l)-((run->utransfer)+i)->unewstation->l ;
         if (tp==((run->utransfer)+i)->duration)
         {
-           printf( "%s->", ((run->utransfer)+i)->unewstation->name );
-           route_print(((run->utransfer)+i)->unewstation, source);
+           time(hour, minute, &(((run->utransfer)+i)->duration));
+           printf( "\n\t%-40s   %d:%02d", ((run->utransfer)+i)->unewstation->name, *hour, *minute);
+           route_print(((run->utransfer)+i)->unewstation, source, hour, minute);
            return;
         }
    }
@@ -179,19 +183,17 @@ void route_print(struct station *run, struct station *source)
    return;
 }
 
-void forroute_print(struct station *run, struct station *source)
+void forroute_print(struct station *run, struct station *source, int *hour, int *minute)
 {
-    printf("\nstart of the road->%s->",run->name);
-    route_print(run, source);
+    printf("\nstart of the road->\n\t%-40s   %d:%02d",run->name, *hour, *minute);
+    route_print(run, source, hour, minute);
     return;
 }
 
 void routesearch(struct station *run, struct station *source, int lmax)
 {   int i=0, tp;
-
     for(; i<(run->count); ++i)
     {
-      printf("\n%s\n",((run->utransfer)+i)->unewstation->name);
       tp=((run->utransfer)+i)->unewstation->l - (run->l);
       if( tp > ((run->utransfer)+i)->duration)
       {
@@ -207,45 +209,45 @@ void routesearch(struct station *run, struct station *source, int lmax)
     return;
 }
 
-
 int main()
 {
-    char filename[10], purpose[100]="Borovickaya", source[100]="Arbatskaya(Arbatsko-Pokrovskaya liniya)";
-    struct station *p, *upurpose, *usource;
+    struct station *upurpose, *usource;
     FILE *file;
-    int i, n=255;
+    int n=255;
     Node **root; root = calloc(sizeof(Node*), n);
 
-//    printf("read base from: ");
-//     scanf("%s",filename);
+file=fopen("basaT.txt","r");
+if (file==NULL){printf("\n\t\t! ERROR !\nDatabases not found. You should contact technical support.\n");  return 7;}
 
-                 file=fopen("basas.txt","r");
-if (file==NULL){printf("File '%s' cannot be open\n", filename);  return 7;}
+input(file, root, n);
+fclose(file);
 
-
-
- p=input(file, root, n);
-
-
-printf("to: ");
-my_scanf(purpose);
+char purpose[100], source[100];
+int i;
 
 printf("from: ");
 my_scanf(source);
 
+printf("to: ");
+my_scanf(purpose);
+
+int hour, minute;
+
+printf("you want to be at the station %s at (hh mm) ", purpose);
+scanf("%d%d", &hour, &minute);
+
 int lmax=100000;
 upurpose=forroute(purpose, root, n);
-printf("%s %p\n", purpose, upurpose);
-
 usource=search(source, root, n);
-printf("%s %p\n", source, usource);
 
 routesearch(upurpose,usource,lmax);
-printf("%d", (usource)->l);
 
+int hour_purpose=hour, minute_purpose=minute;
+time(&hour_purpose, &minute_purpose, &(usource->l));
+printf("\n\nYou should be at the station %s at %d:%02d\n", purpose, hour_purpose, minute_purpose);
+printf("Your journey time will be %d minutes\n", (usource)->l);
 
-forroute_print(usource, upurpose);
+forroute_print(usource, upurpose, &hour, &minute);
 
-fclose(file);
-    return 0;
+return 0;
 }
